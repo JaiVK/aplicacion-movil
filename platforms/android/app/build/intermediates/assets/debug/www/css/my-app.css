@@ -1,0 +1,42 @@
+#map{
+    height: 130%;
+    position: absolute;
+    width: 100%;
+}
+#screm{
+    height: 80%; position: relative; width: 100%;
+}
+
+#picDisplay{
+    width: 100%;
+}
+
+#comment {
+    
+    height: 30%;
+    width: 80%;
+    border-color: black;
+    border-width: 2px;
+}
+
+.card-header {
+    
+    background-color: aliceblue;
+    border-color: darkgray;
+    border-width: 2px;
+    
+}
+
+.card-content {
+    
+    background-color: aliceblue;
+    border-color: darkgray;
+    border-width: 2px;
+    
+}
+
+.ep{
+    
+     width: 100%;
+    
+}

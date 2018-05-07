@@ -19,104 +19,149 @@ var app = new Framework7({
     // ... other parameters
 });
 
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 var app2 = {
-    // Application Constructor
+
     initialize: function() {
         document.addEventListener('deviceready', this.onDeviceReady.bind(this), false);
     },
 
-    // deviceready Event Handler
-    //
-    // Bind any cordova events here. Common events are:
-    // 'pause', 'resume', etc.
     onDeviceReady: function() {
-        this.receivedEvent('deviceready');
-        window.addEventListener("batterystatus", onBatteryStatus, false);
+        
         console.log(navigator.vibrate);
         console.log(navigator.camera);// atento a la camara
+        checkImgList();
+        
     },
 
-    // Update DOM on a Received Event
-   /* receivedEvent: function(id) {
-        var parentElement = document.getElementById(id);
-        var listeningElement = parentElement.querySelector('.listening');
-        var receivedElement = parentElement.querySelector('.received');
-
-        listeningElement.setAttribute('style', 'display:none;');
-        receivedElement.setAttribute('style', 'display:block;');
-
-        console.log('Received Event: ' + id);
-    } */
 };
 
 app2.initialize();
 
 
+var Latitude = undefined;
+var Longitude = undefined;
+var img = undefined;
+var imgList = [];
+var comment = undefined;
+var title = undefined;
+var z = 0;
 
-
+function checkImgList(){
+    
+    imgListPre=localStorage.getItem('imageList');
+    
+    imgListPre=JSON.parse(imgListPre);
+    
+    if( imgListPre != null){
+        
+        imgList = imgListPre;
+        
+    }else{
+        
+        localStorage.setItem("imageList", JSON.stringify(imgList));
+        
+    }
+    
+}
 
 function onBatteryStatus(status) {
-alert("Level: " + status.level + " isPlugged: " + status.isPlugged);
+    
+    alert("Level: " + status.level + " isPlugged: " + status.isPlugged);
+    
 }
 
 document.getElementById("info2").addEventListener("click",function(){
-                                                  alert("Cordova versión " + device.cordova);
+    
+        alert("Cordova versión " + device.cordova);
 
-                                                  }
-                                                 
-                                                 )
+})
 
-function vibrarrr() {
-navigator.vibrate([5000,1000,5000]);
-alert('vibrandoooooo');
-}
-
-document.getElementById("vibracion").addEventListener("click",vibrarrr)
 
 
 // creación foto + info
 function ficha() {
-    $$("#nuevaFicha").html('  <div class="card-header"><button type="button" id="addpic" class="material-icons">add_a_photo</button></div>    <div class="card-content"><input type="text"><button type="button" class="col button button-outline button-round button-raised">Enviar</button></div>  ')
-    $$('#addpic').on('click',cameraStart)
+    
+    getMapLocation();
+    
+    $$("#nuevaFicha").html('  <div class="card-header"><div class="row ep"><button type="button" id="addpic" class="col button button-fill button-round material-icons"><i class="material-icons" >add_a_photo</i></button><button id="file" class="col button button-fill button-round"><i class="material-icons">images</i></button><button type="button" id="reset" class="col button button-fill button-round material-icons"><i class="material-icons">reply</i></button></div></div> '+
+    '<div class="card-content"><input type="text" placeholder=" Título" id="title"><input type="text" placeholder=" Comentario" id="comment"><button type="button" id="addObj" class="col button button-round">Enviar</button></div>  ')
+    
+    $$('#addpic').on('click',cameraStart);
+    $$('#addObj').on('click',createObject);
+    $$('#reset').on('click',resetFicha);
+    $$("#file").on("click",gallery);
+    
 //alert('Nueva entrada');
+}
+
+function createObject(){
+    
+    comment = undefined;
+    title = undefined;
+    
+    comment = $$('#comment').val();
+    title = $$('#title').val();
+    console.log(comment);
+    if(img == undefined || comment == undefined || title == undefined || comment == "" || title == ""){
+        
+        alert ('Faltan campos');
+        
+    }else{
+        
+        setTimeout(function(){
+            
+            z = 0
+            
+            interval = setInterval(function(){
+                
+                if(z == 10){
+                    
+                    alert('Fallo en la localizacion');
+                    
+                    clearInterval(interval);
+                    
+                }else if(Latitude != undefined){
+
+                    newobject = { "url" : img , "latitud" : Latitude , "longitud" : Longitude , "titulo" : title , "comentario" : comment};
+
+                    imgList.push(newobject);
+
+                    localStorage.setItem("imageList", JSON.stringify(imgList));
+
+                    Latitude = undefined;
+                    img = undefined;
+                    clearInterval(interval);
+
+                }
+                
+                z++
+
+            }, 500);    
+        
+        
+        }, 1000);
+        
+        $$("#nuevaFicha").html(''); 
+        
+    } 
+    
 }
 
 document.getElementById("Ficha").addEventListener("click",ficha)
 
-function images() {
-alert('la ruta donde se guardan las imagenes es: file:///storage/emulated/0/Android/data/io.cordova.hellocordova/cache');
-}
-document.getElementById("file2").addEventListener("click",images)
-
 function gallery () {
     
+   
     navigator.camera.getPicture(gallerySuccess, galleryFail, 
-    { quality: 50,destinationType: Camera.DestinationType.FILE_URI,
+    { quality: 100,destinationType: Camera.DestinationType.FILE_URI,
     sourceType: navigator.camera.PictureSourceType.SAVEDPHOTOALBUM });
     
 }
 
 function gallerySuccess(imageURI) {
-    
-    var largeImage = document.getElementById ('1525428176283.jpg');
+    $$(".card-header").html('<img id="picDisplay" src="' + imageURI + '">')
+    var largeImage = document.getElementById ('picDisplay');
+        img = imageURI;
         largeImage.style.display = 'block';
         largeImage.src = imageURI;
     
@@ -129,31 +174,44 @@ function galleryFail() {
 }
 
 
-document.getElementById("file").addEventListener("click",gallery)
-
 function informacion() {
-alert('Proyecto Aplicación movil Versión 1.0');
+    
+    alert('Proyecto Aplicación movil Versión 1.1');
+    
 }
 
 document.getElementById("info").addEventListener("click",informacion)
 
+//camara y envio
 
 function cameraStart(){
- navigator.camera.getPicture(cameraSuccess, cameraError);   
+    
+    navigator.camera.getPicture(cameraSuccess, cameraError,{ saveToPhotoAlbum:true, quality: 100 }); 
+    
 }
 
 
-function cameraSuccess(data){
-    alert('foto guardada en ' + data);
+function cameraSuccess(imageURI){
+    
+    $$(".card-header").html('<img id="picDisplay" src="' + imageURI + '">')
+    var largeImage = document.getElementById ('picDisplay');
+    largeImage.style.display = 'block';
+    img = imageURI;
+    largeImage.src = imageURI;
     
 }
 
 function cameraError(){
+    
     alert('error en la foto');
     
 }
 
-document.getElementById("camera").addEventListener("click",cameraStart)
+function geoImage() {
+
+alert('latitud: ' + Latitude + 'longitud:' + Longitude);
+    
+}
 
 //geolocalizacion
 
@@ -163,16 +221,12 @@ navigator.geolocation.getCurrentPosition(function(position) {
   getMap(latitude, longitude);
 });
 
-
-
-var Latitude = undefined;
-var Longitude = undefined;
-
 // Get geo coordinates
 
 function getMapLocation() {
 
     navigator.geolocation.getCurrentPosition (onMapSuccess, onMapError, { enableHighAccuracy: true });
+    
 }
 
 // Success callback for get geo coordinates
@@ -181,8 +235,8 @@ var onMapSuccess = function (position) {
 
     Latitude = position.coords.latitude;
     Longitude = position.coords.longitude;
-
-    getMap(Latitude, Longitude);
+    
+    //getMap(Latitude, Longitude);
 
 }
 
@@ -205,10 +259,78 @@ function getMap(latitude, longitude) {
     var marker = new google.maps.Marker({
         position: latLong
     });
-
+    
     marker.setMap(map);
+    
+    google.maps.event.addListener(marker, 'click', function () {
+            
+            
+        $$("#nuevaFicha").html('  <div class="card-header"><h2>Tu</h2><h1 id="reset">X</h1></div> '+
+        '<div class="card-content"><p>Posicion actual</p></div>  ');
+        $$('#reset').on('click',resetFicha);
+    });
+    
     map.setZoom(15);
     map.setCenter(marker.getPosition());
+    
+    createMarkers();
+    
+}
+
+
+function createMarkers() {
+    
+    
+    var imgListca = localStorage.getItem('imageList');
+    
+    imgListca=JSON.parse(imgListca);
+    
+    console.log(imgListca);
+    
+    console.log(imgListca[0].latitud);
+    
+    if (imgListca != null ){
+        
+        var x = imgListca.length;
+        
+        for(y = 0;y < x;y++){
+
+            var latLong = new google.maps.LatLng(imgListca[y].latitud, imgListca[y].longitud);
+
+            var marker = new google.maps.Marker({
+                position: latLong
+                
+            });
+
+            marker.setMap(map);
+            marker.imgsrc = imgListca[y].url;
+            marker.titulo = imgListca[y].titulo;
+            marker.comentario = imgListca[y].comentario;
+            google.maps.event.addListener(marker, 'click', function () {
+
+                $$("#nuevaFicha").html('  <div class="card-header"><h2>' + this.titulo + '</h2><h1 id="reset">x</h1></div><div class="card-content"><img id="picDisplay" src="' + this.imgsrc + '" > </div>'+
+                '<div class="card-content"><p>' + this.comentario + '</p></div>  ');
+                
+                $$('#reset').on('click',resetFicha);
+                
+            });
+
+            $$("#listado").append('<div class="card-header"><h2>' + imgListca[y].titulo + '</h2></div><div class="card-content"><img id="picDisplay" src="' + imgListca[y].url + '" > </div>'+
+                '<div class="card-content"><p>' + imgListca[y].comentario + '</p></div>');
+            
+        }
+    }
+}
+
+function resetFicha(){
+    
+    comment = undefined;
+    title = undefined;
+    img = undefined;
+    Latitude = undefined;
+    
+    $$("#nuevaFicha").html(''); 
+    
 }
 
 // Success callback for watching your changing position
@@ -240,5 +362,6 @@ function watchMapPosition() {
 
     return navigator.geolocation.watchPosition
     (onMapWatchSuccess, onMapError, { enableHighAccuracy: true });
+    
 }
 

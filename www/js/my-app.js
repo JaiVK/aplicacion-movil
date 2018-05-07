@@ -77,18 +77,21 @@ document.getElementById("info2").addEventListener("click",function(){
 })
 
 
+
 // creación foto + info
 function ficha() {
     
+    $$('#Ficha').hide();
     getMapLocation();
     
-    $$("#nuevaFicha").html('  <div class="card-header"><div class="row ep"><button type="button" id="addpic" class="col button button-fill button-round material-icons"><i class="material-icons" >add_a_photo</i></button><button id="file" class="col button button-fill button-round"><i class="material-icons">images</i></button><button type="button" id="reset" class="col button button-fill button-round material-icons"><i class="material-icons">reply</i></button></div></div> '+
-    '<div class="card-content"><input type="text" placeholder="Titulo" id="title"><input type="text" placeholder="Comentario" id="comment"><button type="button" id="addObj" class="col button button-round">Enviar</button></div>  ')
+    $$("#nuevaFicha").html('  <div class="card-header pictemp"><div class="row ep"><button type="button" id="addpic" class="col button button-fill button-round material-icons"><i class="material-icons" >add_a_photo</i></button><button id="file" class="col button button-fill button-round"><i class="material-icons">images</i></button><button type="button" id="reset" class="col button button-fill button-round material-icons"><i class="material-icons">reply</i></button></div></div> '+
+    '<div class="card-content"><input type="text" placeholder=" Título" id="title"><input type="text" placeholder=" Comentario" id="comment"><button type="button" id="addObj" class="col button button-round">Enviar</button></div>  ')
     
     $$('#addpic').on('click',cameraStart);
     $$('#addObj').on('click',createObject);
     $$('#reset').on('click',resetFicha);
     $$("#file").on("click",gallery);
+    
 //alert('Nueva entrada');
 }
 
@@ -96,6 +99,7 @@ function createObject(){
     
     comment = undefined;
     title = undefined;
+    
     
     comment = $$('#comment').val();
     title = $$('#title').val();
@@ -106,6 +110,7 @@ function createObject(){
         
     }else{
         
+         $$('#Ficha').show();
         setTimeout(function(){
             
             z = 0
@@ -128,6 +133,7 @@ function createObject(){
 
                     Latitude = undefined;
                     img = undefined;
+                    createMarkers();
                     clearInterval(interval);
 
                 }
@@ -149,6 +155,7 @@ document.getElementById("Ficha").addEventListener("click",ficha)
 
 function gallery () {
     
+   
     navigator.camera.getPicture(gallerySuccess, galleryFail, 
     { quality: 100,destinationType: Camera.DestinationType.FILE_URI,
     sourceType: navigator.camera.PictureSourceType.SAVEDPHOTOALBUM });
@@ -173,7 +180,7 @@ function galleryFail() {
 
 function informacion() {
     
-    alert('Proyecto Aplicación movil Versión 1.0');
+    alert('Proyecto Aplicación movil Versión 1.1');
     
 }
 
@@ -190,11 +197,9 @@ function cameraStart(){
 
 function cameraSuccess(imageURI){
     
-    $$(".card-header").html('<img id="picDisplay" src="' + imageURI + '">')
-    var largeImage = document.getElementById ('picDisplay');
-    largeImage.style.display = 'block';
+    $$(".pictemp").html('<img id="picDisplay" src="' + imageURI + '">')
+    
     img = imageURI;
-    largeImage.src = imageURI;
     
 }
 
@@ -260,7 +265,8 @@ function getMap(latitude, longitude) {
     marker.setMap(map);
     
     google.maps.event.addListener(marker, 'click', function () {
-
+            
+            
         $$("#nuevaFicha").html('  <div class="card-header"><h2>Tu</h2><h1 id="reset">X</h1></div> '+
         '<div class="card-content"><p>Posicion actual</p></div>  ');
         $$('#reset').on('click',resetFicha);
@@ -278,6 +284,8 @@ function createMarkers() {
     
     
     var imgListca = localStorage.getItem('imageList');
+    
+    $$("#listado").html('');
     
     imgListca=JSON.parse(imgListca);
     
@@ -304,14 +312,14 @@ function createMarkers() {
             marker.comentario = imgListca[y].comentario;
             google.maps.event.addListener(marker, 'click', function () {
 
-                $$("#nuevaFicha").html('  <div class="card-header"><h2>' + this.titulo + '</h2><h1 id="reset">X</h1></div><div class="card-content"><img id="picDisplay" src="' + this.imgsrc + '" > </div>'+
+                $$("#nuevaFicha").html('  <div class="card-header"><h2>' + this.titulo + '</h2><h1 id="reset">x</h1></div><div class="card-content"><img id="picDisplay" src="' + this.imgsrc + '" > </div>'+
                 '<div class="card-content"><p>' + this.comentario + '</p></div>  ');
                 
                 $$('#reset').on('click',resetFicha);
                 
             });
 
-            $$("#listado").append('<div class="card-header"><h2>' + imgListca[y].titulo + '</h2><h1 id="reset">X</h1></div><div class="card-content"><img id="picDisplay" src="' + imgListca[y].url + '" > </div>'+
+            $$("#listado").append('<div class="card-header"><h2>' + imgListca[y].titulo + '</h2></div><div class="card-content"><img id="picDisplay" src="' + imgListca[y].url + '" > </div>'+
                 '<div class="card-content"><p>' + imgListca[y].comentario + '</p></div>');
             
         }
@@ -325,6 +333,7 @@ function resetFicha(){
     img = undefined;
     Latitude = undefined;
     
+    $$('#Ficha').show();
     $$("#nuevaFicha").html(''); 
     
 }
